@@ -1,6 +1,6 @@
 # 💬 ChatGPT Share Parser
 
-A modern, modular Streamlit web application for parsing ChatGPT share links and exporting conversations as CSV or JSON files.
+A modern, modular Streamlit web application for parsing ChatGPT share links and exporting conversations as CSV or JSON files. This app was created with the help of ChatGPT and is still in development.
 
 ## ✨ Features
 
@@ -22,7 +22,7 @@ A modern, modular Streamlit web application for parsing ChatGPT share links and 
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/dj-urg/chat-gpt-parser
    cd Chat_GPT_Chat_Parser
    ```
 
