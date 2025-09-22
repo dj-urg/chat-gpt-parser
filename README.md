@@ -1,165 +1,123 @@
-# 💬 ChatGPT Share Parser
+# ChatGPT Conversation Parser
 
-A modern, modular Streamlit web application for parsing ChatGPT share links and exporting conversations as CSV or JSON files. This app was created with the help of ChatGPT and is still in development.
+A Next.js application that allows users to parse ChatGPT conversation share links and export them as CSV files.
 
-## ✨ Features
+## Features
 
-- **Modern Web Interface**: Beautiful, responsive Streamlit UI with gradient designs
-- **Smart Parsing**: Intelligent parsing of ChatGPT share pages with fallback methods
-- **Multiple Export Formats**: Download conversations as CSV or JSON
-- **Rich Data Extraction**: Captures text, markdown, code blocks, links, and images
-- **Real-time Validation**: URL validation and parsing status feedback
-- **Modular Architecture**: Clean, maintainable code following industry best practices
+- 🔗 Parse ChatGPT public share links
+- 📊 Export conversations as CSV format
+- 👀 Preview conversations in a clean UI
+- 💾 Download CSV files directly
+- 📋 Copy CSV content to clipboard
+- 🎨 Modern, responsive design with Tailwind CSS
+- ⚡ Fast parsing with server-side processing
 
-## 🚀 Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip package manager
+- Node.js 18+ 
+- npm or yarn
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/dj-urg/chat-gpt-parser
-   cd Chat_GPT_Chat_Parser
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Install Playwright browsers**
-   ```bash
-   playwright install chromium
-   ```
-
-4. **Run the Streamlit app**
-   ```bash
-   streamlit run app.py
-   ```
-
-5. **Open your browser**
-   Navigate to `http://localhost:8501`
-
-## 📖 Usage
-
-1. **Copy a ChatGPT share link** from a public conversation
-2. **Paste the URL** in the input field
-3. **Click "Parse ChatGPT Share"** to extract the conversation
-4. **Download your data** as CSV or JSON
-5. **View the conversation** in the interactive preview
-
-## 🏗️ Architecture
-
-The application follows a modular, layered architecture:
-
-```
-Chat_GPT_Chat_Parser/
-├── app.py                 # Main Streamlit application entry point
-├── config.py             # Configuration and constants
-├── requirements.txt      # Python dependencies
-├── README.md            # Project documentation
-├── src/                 # Source code package
-│   ├── __init__.py      # Package initialization
-│   ├── parser.py        # Core parsing logic
-│   ├── utils.py         # Utility functions
-│   └── ui_components.py # UI rendering components
-└── exports/             # Generated export files
-    └── YYYY/
-        └── YYYY-MM/
-```
-
-### Core Components
-
-- **`app.py`**: Main application orchestrator and UI layout
-- **`src/parser.py`**: `ChatGPTShareParser` class handling all parsing logic
-- **`src/utils.py`**: Helper functions for text processing and validation
-- **`src/ui_components.py`**: Modular UI components for different sections
-- **`config.py`**: Centralized configuration management
-
-## 🔧 Configuration
-
-Key configuration options in `config.py`:
-
-- **Playwright timeouts**: Adjust scraping timeouts for different network conditions
-- **UI settings**: Customize display parameters and styling
-- **Export options**: Configure file formats and encoding
-- **Environment variables**: Set debug mode and log levels
-
-## 🎨 Customization
-
-### Styling
-
-The app uses custom CSS with gradient backgrounds and modern styling. Modify the CSS in `app.py` or create a separate stylesheet.
-
-### Export Formats
-
-Add new export formats by extending the `ChatGPTShareParser.export_to_*` methods and updating the UI components.
-
-### Parsing Logic
-
-Extend the parser to handle additional ChatGPT page structures by modifying the `_parse_messages_from_html` method.
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Playwright Installation**
-   ```bash
-   playwright install chromium
-   playwright install-deps
-   ```
-
-2. **Timeout Errors**
-   - Increase timeout values in `config.py`
-   - Check network connectivity
-   - Verify the share link is public and accessible
-
-3. **Parsing Failures**
-   - Ensure the link is a valid ChatGPT share URL
-   - Check if the conversation is publicly accessible
-   - Try refreshing the page or using a different browser
-
-### Debug Mode
-
-Enable debug mode by setting environment variables:
+1. Clone the repository:
 ```bash
-export DEBUG=true
-export LOG_LEVEL=DEBUG
-streamlit run app.py
+git clone <repository-url>
+cd chatgpt-conversation-parser
 ```
 
-## 🤝 Contributing
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server:
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. Copy a ChatGPT conversation share link (e.g., `https://chatgpt.com/share/68d1449d-2328-800b-8715-43f6696bfb19`)
+2. Paste the URL into the input field
+3. Click "Parse & Generate CSV"
+4. Preview the conversation and download the CSV file
+
+## How It Works
+
+The application uses web scraping to extract conversation data from ChatGPT share links. It:
+
+1. Validates the URL format
+2. Fetches the conversation page
+3. Parses the HTML using Cheerio
+4. Extracts user and assistant messages
+5. Formats the data as CSV
+6. Provides both UI preview and download functionality
+
+## API Endpoints
+
+### POST `/api/parse-conversation`
+
+Parses a ChatGPT conversation URL and returns the conversation data.
+
+**Request Body:**
+```json
+{
+  "url": "https://chatgpt.com/share/68d1449d-2328-800b-8715-43f6696bfb19"
+}
+```
+
+**Response:**
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?",
+      "timestamp": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "role": "assistant", 
+      "content": "I'm doing well, thank you!",
+      "timestamp": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "csv": "Message Number,Role,Content,Timestamp\n1,user,Hello how are you?,2024-01-01T00:00:00.000Z\n2,assistant,I'm doing well thank you!,2024-01-01T00:00:00.000Z",
+  "messageCount": 2
+}
+```
+
+## Technologies Used
+
+- **Next.js 14** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Cheerio** - HTML parsing
+- **csv-stringify** - CSV generation
+- **Lucide React** - Icons
+
+## Limitations
+
+- Only works with public ChatGPT share links
+- ChatGPT may change their HTML structure, which could break parsing
+- Rate limiting may apply for multiple requests
+- Timestamps are not available in share links (approximated)
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **Streamlit** for the amazing web app framework
-- **Playwright** for robust web scraping capabilities
-- **BeautifulSoup** for HTML parsing
-- **Pandas** for data manipulation and export
-
-## 📞 Support
-
-For questions, issues, or feature requests:
-
-1. Check the troubleshooting section above
-2. Search existing issues
-3. Create a new issue with detailed information
-4. Include error messages and reproduction steps
-
----
-
-**Made with ❤️ for the ChatGPT community**
+MIT License - see LICENSE file for details

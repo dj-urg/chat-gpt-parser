@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/parse-conversation/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
