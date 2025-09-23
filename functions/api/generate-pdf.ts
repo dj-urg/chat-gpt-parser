@@ -1,5 +1,5 @@
 export async function onRequestPost(context: any) {
-  const { request } = context;
+  const request = context.request;
   
   try {
     const { messages, url, title } = await request.json();

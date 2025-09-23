@@ -1,5 +1,3 @@
-import { NextRequest, NextResponse } from 'next/server';
-
 interface Message {
   role: string;
   content: string;
@@ -10,7 +8,7 @@ interface Message {
 }
 
 export async function onRequestPost(context: any) {
-  const { request } = context;
+  const request = context.request;
   
   try {
     const { url } = await request.json();
