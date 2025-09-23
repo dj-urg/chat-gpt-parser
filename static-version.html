@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Conversation Parser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">ChatGPT Conversation Parser</h1>
+            <p class="text-lg text-gray-600">Parse and export ChatGPT conversations in multiple formats</p>
+        </div>
+
+        <div class="card max-w-2xl mx-auto">
+            <form id="parserForm">
+                <div class="mb-6">
+                    <label for="url" class="block text-sm font-medium text-gray-700 mb-2">
+                        ChatGPT Share URL
+                    </label>
+                    <input
+                        type="url"
+                        id="url"
+                        name="url"
+                        placeholder="https://chatgpt.com/share/..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                    />
+                </div>
+                
+                <button type="submit" class="btn-primary w-full" id="submitBtn">
+                    Parse Conversation
+                </button>
+            </form>
+        </div>
+
+        <div id="progressContainer" class="card max-w-2xl mx-auto" style="display: none;">
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="progressText" class="text-sm font-medium text-gray-700">Starting...</span>
+                    <span id="progressPercent" class="text-sm font-bold text-blue-600">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultContainer" class="card max-w-4xl mx-auto" style="display: none;">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Export Options</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <button id="downloadCSV" class="btn-primary">Download CSV</button>
+                <button id="downloadJSON" class="btn-primary">Download JSON</button>
+                <button id="copyCSV" class="btn-primary">Copy CSV</button>
+            </div>
+            
+            <div class="bg-gray-100 rounded-lg p-4">
+                <h4 class="font-medium text-gray-900 mb-2">Preview (First 3 messages):</h4>
+                <div id="preview" class="text-sm text-gray-700"></div>
+            </div>
+        </div>
+
+        <div id="errorContainer" class="card max-w-2xl mx-auto bg-red-50 border border-red-200" style="display: none;">
+            <div class="text-red-800">
+                <h4 class="font-medium">Error</h4>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResult = null;
+
+        document.getElementById('parserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const resultContainer = document.getElementById('resultContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            
+            // Reset UI
+            resultContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+            progressContainer.style.display = 'block';
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Parsing...';
+            
+            try {
+                // Simulate parsing with progress
+                await simulateParsing();
+                
+                // Mock result for demonstration
+                currentResult = {
+                    messages: [
+                        {
+                            role: 'user',
+                            content: 'Hello, how are you?',
+                            timestamp: new Date().toISOString(),
+                            hasCodeBlocks: false,
+                            hasLinks: false,
+                            hasImages: false
+                        },
+                        {
+                            role: 'assistant',
+                            content: 'I\'m doing well, thank you for asking! How can I help you today?',
+                            timestamp: new Date().toISOString(),
+                            hasCodeBlocks: false,
+                            hasLinks: false,
+                            hasImages: false
+                        },
+                        {
+                            role: 'user',
+                            content: 'Can you help me with JavaScript?',
+                            timestamp: new Date().toISOString(),
+                            hasCodeBlocks: false,
+                            hasLinks: false,
+                            hasImages: false
+                        }
+                    ]
+                };
+                
+                // Show results
+                progressContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+                showPreview();
+                
+            } catch (error) {
+                progressContainer.style.display = 'none';
+                errorContainer.style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Parse Conversation';
+            }
+        });
+
+        async function simulateParsing() {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            const steps = [
+                'Fetching conversation...',
+                'Parsing messages...',
+                'Analyzing content...',
+                'Generating exports...',
+                'Complete!'
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                progressText.textContent = steps[i];
+                progressBar.style.width = `${(i + 1) * 20}%`;
+                progressPercent.textContent = `${(i + 1) * 20}%`;
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+        }
+
+        function showPreview() {
+            const preview = document.getElementById('preview');
+            const messages = currentResult.messages.slice(0, 3);
+            
+            preview.innerHTML = messages.map((msg, index) => 
+                `<div class="mb-2 p-2 bg-white rounded border-l-4 ${msg.role === 'user' ? 'border-blue-500' : 'border-green-500'}">
+                    <strong>${msg.role.toUpperCase()}:</strong> ${msg.content}
+                </div>`
+            ).join('');
+        }
+
+        function generateCSV() {
+            const headers = 'Message Number,Role,Content,Quote Block,Links,Images,Timestamp\n';
+            const rows = currentResult.messages.map((message, index) => 
+                `${index + 1},"${message.role}","${message.content.replace(/"/g, '""')}","${message.hasCodeBlocks ? 'Yes' : 'No'}","${message.hasLinks ? 'Yes' : 'No'}","${message.hasImages ? 'Yes' : 'No'}","${message.timestamp}"`
+            ).join('\n');
+            return headers + rows;
+        }
+
+        function generateJSON() {
+            return JSON.stringify({
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    messageCount: currentResult.messages.length,
+                    source: 'ChatGPT Parser'
+                },
+                messages: currentResult.messages
+            }, null, 2);
+        }
+
+        document.getElementById('downloadCSV').addEventListener('click', () => {
+            const csv = generateCSV();
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatgpt-conversation-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('downloadJSON').addEventListener('click', () => {
+            const json = generateJSON();
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatgpt-conversation-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('copyCSV').addEventListener('click', async () => {
+            const csv = generateCSV();
+            try {
+                await navigator.clipboard.writeText(csv);
+                alert('CSV copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy to clipboard');
+            }
+        });
+    </script>
+</body>
+</html>
