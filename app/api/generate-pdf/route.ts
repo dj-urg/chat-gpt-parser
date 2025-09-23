@@ -11,17 +11,26 @@ interface Message {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`[${requestId}] Starting PDF generation request`);
+  
   try {
     const { messages, url, title } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
+      console.log(`[${requestId}] Error: Invalid messages data`);
       return NextResponse.json({ error: 'Invalid messages data' }, { status: 400 });
     }
+
+    console.log(`[${requestId}] Generating PDF for ${messages.length} messages`);
 
     // Generate HTML template
     const html = generateChatHTML(messages, url, title);
 
     // Generate PDF using Puppeteer
+    console.log(`[${requestId}] Launching Puppeteer for PDF generation`);
     const browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -32,7 +41,9 @@ export async function POST(request: NextRequest) {
         '--no-first-run',
         '--no-zygote',
         '--single-process',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor'
       ]
     });
 
@@ -41,8 +52,10 @@ export async function POST(request: NextRequest) {
     // Set timeout for page operations
     page.setDefaultTimeout(30000);
     
+    console.log(`[${requestId}] Setting page content`);
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
+    console.log(`[${requestId}] Generating PDF`);
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -56,6 +69,9 @@ export async function POST(request: NextRequest) {
 
     await browser.close();
 
+    const processingTime = Date.now() - startTime;
+    console.log(`[${requestId}] PDF generation completed successfully in ${processingTime}ms`);
+
     // Return PDF as response
     return new NextResponse(pdfBuffer as BodyInit, {
       headers: {
@@ -65,8 +81,12 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('PDF generation error:', error);
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
+    const processingTime = Date.now() - startTime;
+    console.error(`[${requestId}] PDF generation error after ${processingTime}ms:`, error);
+    return NextResponse.json({ 
+      error: 'Failed to generate PDF',
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+    }, { status: 500 });
   }
 }
 

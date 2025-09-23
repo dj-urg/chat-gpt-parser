@@ -18,7 +18,18 @@ async function extractConversationWithPuppeteer(url: string): Promise<Message[]>
     console.log('Launching headless browser...');
     browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor'
+      ]
     });
     
     const page = await browser.newPage();
@@ -760,26 +771,33 @@ function cleanContentForCSV(content: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`[${requestId}] Starting conversation extraction request`);
+  
   try {
     const { url } = await request.json();
     
     if (!url) {
+      console.log(`[${requestId}] Error: URL is required`);
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
     // Validate ChatGPT share URL
     const chatgptUrlPattern = /^https:\/\/chatgpt\.com\/share\/[a-zA-Z0-9-]+$/;
     if (!chatgptUrlPattern.test(url)) {
+      console.log(`[${requestId}] Error: Invalid URL format: ${url}`);
       return NextResponse.json({ error: 'Invalid ChatGPT share URL format' }, { status: 400 });
     }
 
-    console.log('Starting conversation extraction for URL:', url);
+    console.log(`[${requestId}] Starting conversation extraction for URL: ${url}`);
 
     // First try the traditional fetch approach
     let messages: Message[] = [];
     
     try {
-      console.log('Trying traditional fetch approach...');
+      console.log(`[${requestId}] Trying traditional fetch approach...`);
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -789,28 +807,33 @@ export async function POST(request: NextRequest) {
       if (response.ok) {
         const html = await response.text();
         messages = parseHtmlContent(html);
-        console.log(`Traditional approach found ${messages.length} messages`);
+        console.log(`[${requestId}] Traditional approach found ${messages.length} messages`);
+      } else {
+        console.log(`[${requestId}] Traditional fetch failed with status: ${response.status}`);
       }
     } catch (error) {
-      console.log('Traditional fetch failed:', error);
+      console.log(`[${requestId}] Traditional fetch failed:`, error);
     }
 
     // If traditional approach didn't work, try Puppeteer
     if (messages.length === 0) {
-      console.log('Trying Puppeteer approach...');
+      console.log(`[${requestId}] Trying Puppeteer approach...`);
       try {
         messages = await extractConversationWithPuppeteer(url);
-        console.log(`Puppeteer approach found ${messages.length} messages`);
+        console.log(`[${requestId}] Puppeteer approach found ${messages.length} messages`);
       } catch (error) {
-        console.error('Puppeteer approach failed:', error);
+        console.error(`[${requestId}] Puppeteer approach failed:`, error);
       }
     }
 
     if (messages.length === 0) {
+      console.log(`[${requestId}] No messages found after all extraction methods`);
       return NextResponse.json({ 
         error: 'No conversation messages found. The conversation might be private, the URL format has changed, or the page requires JavaScript to load content.' 
       }, { status: 404 });
     }
+
+    console.log(`[${requestId}] Successfully extracted ${messages.length} messages`);
 
     // Convert to CSV format with proper content cleaning
     const csvData = messages.map((message, index) => ({
@@ -832,6 +855,9 @@ export async function POST(request: NextRequest) {
       escape: '"' // Properly escape quotes
     });
 
+    const processingTime = Date.now() - startTime;
+    console.log(`[${requestId}] Request completed successfully in ${processingTime}ms`);
+
     return NextResponse.json({
       messages: messages,
       csv: csv,
@@ -839,9 +865,11 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error parsing conversation:', error);
+    const processingTime = Date.now() - startTime;
+    console.error(`[${requestId}] Error parsing conversation after ${processingTime}ms:`, error);
     return NextResponse.json({ 
-      error: 'Failed to parse conversation. Please check the URL and try again.' 
+      error: 'Failed to parse conversation. Please check the URL and try again.',
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     }, { status: 500 });
   }
 }

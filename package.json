@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "pages:build": "next build"
+    "pages:build": "next build",
+    "debug:vercel": "node scripts/debug-vercel.js",
+    "debug:local": "npm run build && npm run start"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
