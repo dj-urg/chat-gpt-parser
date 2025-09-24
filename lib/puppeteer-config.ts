@@ -24,12 +24,18 @@ export async function getPuppeteerConfig() {
   };
 
   if (isVercel) {
-    // On Vercel, use @sparticuz/chromium
-    const chromium = await import('@sparticuz/chromium');
+    // On Vercel, use @sparticuz/chromium-min with remote executable path
+    console.log('Using Vercel configuration with chromium-min');
+    const chromium = await import('@sparticuz/chromium-min');
+    const remoteExecutablePath = 'https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar';
+    
+    const executablePath = await chromium.default.executablePath(remoteExecutablePath);
+    console.log('Chromium executable path:', executablePath);
+    
     return {
       ...baseConfig,
       args: [...chromium.default.args, ...baseConfig.args],
-      executablePath: await chromium.default.executablePath()
+      executablePath: executablePath
     };
   } else {
     // Local development - use bundled Chrome

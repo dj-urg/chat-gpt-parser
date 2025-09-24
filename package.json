@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@sparticuz/chromium": "^138.0.2",
+    "@sparticuz/chromium-min": "^138.0.2",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.0",
     "csv-parse": "^6.1.0",
