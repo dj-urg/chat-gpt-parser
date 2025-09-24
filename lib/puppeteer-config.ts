@@ -26,18 +26,12 @@ export function getPuppeteerConfig() {
   };
 
   if (isVercel) {
-    // On Vercel, try multiple possible Chrome paths
-    const possiblePaths = [
-      '/usr/bin/google-chrome-stable',
-      '/usr/bin/google-chrome',
-      '/usr/bin/chromium-browser',
-      '/usr/bin/chromium',
-      '/opt/google/chrome/chrome'
-    ];
-    
-    // For Vercel, let Puppeteer find the Chrome binary automatically
+    // On Vercel, let Puppeteer find the Chrome binary automatically
     // by not specifying executablePath
-    return baseConfig;
+    return {
+      ...baseConfig,
+      executablePath: undefined
+    };
   } else {
     // Local development - use bundled Chrome
     return {
