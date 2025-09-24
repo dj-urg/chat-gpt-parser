@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stringify } from 'csv-stringify/sync';
-import puppeteer from 'puppeteer';
+import { launchPuppeteer } from '@/lib/puppeteer-config';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -16,21 +16,7 @@ async function extractConversationWithPuppeteer(url: string): Promise<Message[]>
   let browser;
   try {
     console.log('Launching headless browser...');
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor'
-      ]
-    });
+    browser = await launchPuppeteer();
     
     const page = await browser.newPage();
     

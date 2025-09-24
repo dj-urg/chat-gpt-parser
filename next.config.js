@@ -9,8 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  // Ensure proper build output
-  output: 'standalone',
   // Webpack configuration for Puppeteer
   webpack: (config, { isServer }) => {
     if (isServer) {

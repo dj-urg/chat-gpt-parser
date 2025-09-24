@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import { launchPuppeteer } from '@/lib/puppeteer-config';
 
 interface Message {
   role: string;
@@ -31,21 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Generate PDF using Puppeteer
     console.log(`[${requestId}] Launching Puppeteer for PDF generation`);
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor'
-      ]
-    });
+    const browser = await launchPuppeteer();
 
     const page = await browser.newPage();
     
