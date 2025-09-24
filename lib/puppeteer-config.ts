@@ -33,7 +33,10 @@ export function getPuppeteerConfig() {
     };
   } else {
     // Local development - use bundled Chrome
-    return baseConfig;
+    return {
+      ...baseConfig,
+      executablePath: undefined
+    };
   }
 }
 
@@ -48,5 +51,10 @@ export async function launchPuppeteer() {
     isVercel: process.env.VERCEL === '1'
   });
   
-  return await puppeteer.launch(config);
+  // Remove undefined executablePath to use bundled Chrome
+  const launchConfig = config.executablePath 
+    ? config 
+    : { headless: config.headless, args: config.args };
+  
+  return await puppeteer.launch(launchConfig);
 }
