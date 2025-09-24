@@ -52,10 +52,16 @@ export async function launchPuppeteer() {
     isVercel: process.env.VERCEL === '1'
   });
   
-  // Remove undefined executablePath to let Puppeteer auto-detect
-  const launchConfig = config.executablePath 
-    ? config 
-    : { headless: config.headless, args: config.args };
+  // Create launch config without undefined executablePath
+  const launchConfig: any = {
+    headless: config.headless,
+    args: config.args
+  };
+  
+  // Only add executablePath if it's defined
+  if (config.executablePath) {
+    launchConfig.executablePath = config.executablePath;
+  }
   
   return await puppeteer.launch(launchConfig);
 }
