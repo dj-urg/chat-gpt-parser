@@ -2,7 +2,7 @@
 const nextConfig = {
   // App directory is now stable in Next.js 14
   experimental: {
-    serverComponentsExternalPackages: ['puppeteer'],
+    serverComponentsExternalPackages: ['puppeteer', '@sparticuz/chromium', 'puppeteer-core'],
     webpackBuildWorker: true
   },
   // Vercel deployment compatibility
@@ -12,7 +12,7 @@ const nextConfig = {
   // Webpack configuration for Puppeteer
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals.push('puppeteer');
+      config.externals.push('puppeteer', '@sparticuz/chromium', 'puppeteer-core');
     }
     return config;
   }

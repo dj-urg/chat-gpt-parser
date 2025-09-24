@@ -1,9 +1,7 @@
-import puppeteer from 'puppeteer';
-
 /**
  * Get Puppeteer launch configuration optimized for Vercel
  */
-export function getPuppeteerConfig() {
+export async function getPuppeteerConfig() {
   const isVercel = process.env.VERCEL === '1';
   
   const baseConfig = {
@@ -26,11 +24,12 @@ export function getPuppeteerConfig() {
   };
 
   if (isVercel) {
-    // On Vercel, let Puppeteer find the Chrome binary automatically
-    // by not specifying executablePath
+    // On Vercel, use @sparticuz/chromium
+    const chromium = await import('@sparticuz/chromium');
     return {
       ...baseConfig,
-      executablePath: undefined
+      args: [...chromium.default.args, ...baseConfig.args],
+      executablePath: await chromium.default.executablePath()
     };
   } else {
     // Local development - use bundled Chrome
@@ -45,11 +44,21 @@ export function getPuppeteerConfig() {
  * Launch Puppeteer with Vercel-optimized configuration
  */
 export async function launchPuppeteer() {
-  const config = getPuppeteerConfig();
+  const isVercel = process.env.VERCEL === '1';
+  let puppeteer: any;
+  
+  // Dynamically import the correct Puppeteer package
+  if (isVercel) {
+    puppeteer = await import('puppeteer-core');
+  } else {
+    puppeteer = await import('puppeteer');
+  }
+  
+  const config = await getPuppeteerConfig();
   console.log('Launching Puppeteer with config:', { 
     headless: config.headless, 
     executablePath: config.executablePath || 'auto-detect',
-    isVercel: process.env.VERCEL === '1'
+    isVercel: isVercel
   });
   
   // Create launch config without undefined executablePath
