@@ -26,11 +26,18 @@ export function getPuppeteerConfig() {
   };
 
   if (isVercel) {
-    // On Vercel, use the system Chrome
-    return {
-      ...baseConfig,
-      executablePath: '/usr/bin/google-chrome-stable'
-    };
+    // On Vercel, try multiple possible Chrome paths
+    const possiblePaths = [
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/opt/google/chrome/chrome'
+    ];
+    
+    // For Vercel, let Puppeteer find the Chrome binary automatically
+    // by not specifying executablePath
+    return baseConfig;
   } else {
     // Local development - use bundled Chrome
     return {
@@ -47,11 +54,11 @@ export async function launchPuppeteer() {
   const config = getPuppeteerConfig();
   console.log('Launching Puppeteer with config:', { 
     headless: config.headless, 
-    executablePath: config.executablePath || 'bundled',
+    executablePath: config.executablePath || 'auto-detect',
     isVercel: process.env.VERCEL === '1'
   });
   
-  // Remove undefined executablePath to use bundled Chrome
+  // Remove undefined executablePath to let Puppeteer auto-detect
   const launchConfig = config.executablePath 
     ? config 
     : { headless: config.headless, args: config.args };
