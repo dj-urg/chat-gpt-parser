@@ -63,5 +63,8 @@ export async function launchPuppeteer() {
     launchConfig.executablePath = config.executablePath;
   }
   
-  return await puppeteer.launch(launchConfig);
+  console.log('Final Puppeteer launch config:', launchConfig);
+  const browser = await puppeteer.launch(launchConfig);
+  console.log('Puppeteer browser launched successfully');
+  return browser;
 }

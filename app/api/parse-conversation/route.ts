@@ -30,6 +30,23 @@ async function extractConversationWithPuppeteer(url: string): Promise<Message[]>
     console.log('Waiting for conversation content to load...');
     await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds for content to load
     
+    // Debug: Check what's on the page
+    const pageTitle = await page.title();
+    const pageUrl = await page.url();
+    console.log('Page loaded - Title:', pageTitle, 'URL:', pageUrl);
+    
+    // Debug: Check if we can find any elements
+    const elementCount = await page.evaluate(() => {
+      const allElements = document.querySelectorAll('*');
+      const conversationElements = document.querySelectorAll('[data-message-author-role], [data-testid*="conversation-turn"], .conversation-turn, [class*="conversation-turn"]');
+      return {
+        totalElements: allElements.length,
+        conversationElements: conversationElements.length,
+        bodyText: document.body.textContent?.substring(0, 200) || 'No body text'
+      };
+    });
+    console.log('Page analysis:', elementCount);
+    
     // Try to find conversation elements
     const messages = await page.evaluate(() => {
       const extractedMessages: Array<{role: string, content: string, timestamp: string, hasCodeBlocks: boolean, hasLinks: boolean, hasImages: boolean}> = [];
@@ -380,6 +397,15 @@ async function extractConversationWithPuppeteer(url: string): Promise<Message[]>
     });
     
     console.log(`Extracted ${messages.length} messages using Puppeteer`);
+    if (messages.length > 0) {
+      console.log('First message sample:', {
+        role: messages[0].role,
+        content: messages[0].content.substring(0, 100) + '...',
+        hasCodeBlocks: messages[0].hasCodeBlocks,
+        hasLinks: messages[0].hasLinks,
+        hasImages: messages[0].hasImages
+      });
+    }
     return messages as Message[];
     
   } catch (error) {
